@@ -1,3 +1,4 @@
+
 (function() {
 
   const serverUrl = 'http://127.0.0.1:3000';
@@ -5,24 +6,67 @@
   //
   // TODO: build the swim command fetcher here
   //
+  const fetchSwimCommand = () => {
+    $.ajax({
+      type: 'GET',
+      url: serverUrl,
+      success: (res) => (SwimTeam.move(res)),
+    });
+  };
+
+  const fetchRandomSwim = (command) => {
+    $.ajax({
+      type: 'GET',
+      url: serverUrl,
+      data: {
+        command: command
+      },
+      success: (res) => (SwimTeam.move(res)),
+    });
+  };
+
+  const fetchBackgroundImage = () => {
+    $.ajax({
+      type: 'GET',
+      url: serverUrl + '/background.jpg',
+      success: (res) => {
+        console.log('success :(');
+        window.location = window.location.href;
+        // $('.background').css("background-image", `url(${res})`);
+      },
+      error: (error) => (console.log(error, 'failed :('))
+    });
+  };
+
+  $("#getMove").on('click', (event) => {
+    fetchSwimCommand();
+  });
+
+  $("#getRandom").on('click', (event) => {
+    fetchRandomSwim('random');
+  });
+
+  $("#getBackground").on('click', (event) => {
+    fetchBackgroundImage();
+  });
 
   /////////////////////////////////////////////////////////////////////
   // The ajax file uplaoder is provided for your convenience!
   // Note: remember to fix the URL below.
   /////////////////////////////////////////////////////////////////////
 
-  const ajaxFileUplaod = (file) => {
+  const ajaxFileUpload = (file) => {
     var formData = new FormData();
     formData.append('file', file);
     $.ajax({
       type: 'POST',
       data: formData,
-      url: 'FILL_ME_IN',
+      url: serverUrl,
       cache: false,
       contentType: false,
       processData: false,
-      success: () => {
-        // reload the page
+      success: (res) => {
+        console.log(res);// reload the page
         window.location = window.location.href;
       }
     });
@@ -43,7 +87,7 @@
       return;
     }
 
-    ajaxFileUplaod(file);
+    ajaxFileUpload(file);
   });
 
 })();

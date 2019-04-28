@@ -17,26 +17,46 @@ module.exports.router = (req, res, next = () => {}) => {
         res.writeHead(200, headers);
         res.end(messageQueue.dequeue());
 
-      } else if (req.url === '/?command=random') {
+      }
+
+      if (req.url === '/?command=random') {
         res.writeHead(200, headers);
         res.end(generateRandom());
 
-      } else if (req.url[0] !== '/') {
-        console.log('trying a legit file');
-        fs.readFile(`../spec/water-lg.jpg`, function read(err, data) {
-          console.log('err is', err);
-          console.log('data is', data);
-        });
-        
-        
-        fs.readFile(`../${req.url}`, function read(err, data) {
-          console.log('err is', err);
-          console.log('data is', data);
+      }
+
+      if (req.url === '/background.jpg') {
+        fs.readFile(module.exports.backgroundImageFile, (err, data) => {
+          if (err) {
+            res.writeHead(404, headers);
+            res.end();
+          } else {
+            res.writeHead(200, headers);
+            res.write(data, 'binary');
+            res.end();
+          }
         });
       }
       break;
 
     case 'POST':
+      if (req.url === '/background.jpg') {
+        var imageFile = Buffer.alloc(0);
+        req.on('data', chunk => {
+          imageFile = Buffer.concat([imageFile, chunk]);
+        });
+        req.on('end', ()=> {
+          var imageData = multipart.getFile(imageFile);
+          fs.writeFile(module.exports.backgroundImageFile, imageData, () => {
+            res.writeHead(201, headers);
+            res.write(module.exports.backgroundImageFile);
+            res.end();
+          });
+
+        });
+
+
+      }
       break;
 
     case 'OPTIONS':
@@ -46,10 +66,12 @@ module.exports.router = (req, res, next = () => {}) => {
     default:
       break;
   }
+
+  next();
 };
 
 var generateRandom = () => {
   var options = ['up', 'down', 'left', 'right'];
   var i = Math.floor(Math.random() * 4);
   return options[i];
-}
+};
